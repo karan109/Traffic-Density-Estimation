@@ -12,15 +12,14 @@ void CallBackFunc(int event, int x, int y, int flags, void* userdata)
      if  ( event == EVENT_LBUTTONDOWN )
      {
         points[ct++] = make_pair(x, y);
-        cout << "Left button of the mouse is clicked - position (" << x << ", " << y << ")" << endl;
-        
+
         // Print current selection of points (for debugging)
         for(int i=0;i<ct;i++){
             cout<<points[i].first<<" "<<points[i].second<<endl;
         }
 
         // Print number selected of points
-        cout<<ct<<endl;
+        cout<<"Total number of points taken: "<<ct<<endl;
      }
 }
 
