@@ -1,0 +1,1 @@
+All transformed images are stored here.

@@ -130,8 +130,8 @@ int transformCrop(string imageName){
         char c = waitKey(10);
         if(c == 27 or c == 13){
             // Save Images
-            bool check_transform = imwrite("Transforms/" + imageName, im_transform);
-            bool check_crop = imwrite("Crops/" + imageName, im_crop);
+            bool check_transform = imwrite("Transforms/transform_" + imageName, im_transform);
+            bool check_crop = imwrite("Crops/crop_" + imageName, im_crop);
 
             // Succesfull saves
             if(check_crop == true and check_transform == true)

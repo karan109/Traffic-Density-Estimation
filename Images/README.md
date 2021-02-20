@@ -1,0 +1,1 @@
+All original images are stored here.
