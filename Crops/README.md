@@ -1,1 +1,1 @@
-All cropped images are stored here.
+All cropped images are saved here.

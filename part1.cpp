@@ -110,7 +110,7 @@ int transformCrop(string imageName){
         }
         if(c == 27){
             // Escape key pressed
-            cout << "Aborting..." << endl;
+            cout << "\"Esc\" key pressed. Aborting..." << endl;
             return -1;
         }
     }
@@ -129,21 +129,25 @@ int transformCrop(string imageName){
     // Press Escape or Enter key to exit
     while(true){
         char c = waitKey(10);
-        if(c == 27 or c == 13){
+        if(c == 13){
             // Save Images
             bool check_transform = imwrite("Transforms/transform_" + imageName, im_transform);
             bool check_crop = imwrite("Crops/crop_" + imageName, im_crop);
 
-            // Succesfull saves
+            // Succesfully saved
             if(check_crop == true and check_transform == true)
                 cout << "Images saved in folders \"Crops\" and \"Transforms\"" << endl;
             
             // Unsuccessful
             else{
-                cout << "Failed to save image(s). Please try again";
+                cout << "Failed to save image(s). Please try again" << endl;
                 return -1;
             }
             break;
+        }
+        if(c == 27){
+            cout << "\"Esc\" key pressed. Aborting..." << endl;
+            return -1;
         }
     }
     return 0;

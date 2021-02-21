@@ -1,1 +1,1 @@
-All transformed images are stored here.
+All transformed images are saved here.
