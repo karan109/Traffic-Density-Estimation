@@ -1,4 +1,7 @@
 # Traffic Density Estimation
+## Dependencies
+* OpenCV
+
 ## Build executable
 ```bash
 make
