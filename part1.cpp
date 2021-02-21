@@ -64,6 +64,11 @@ int transformCrop(string imageName){
 
     // Read from the command-line argument
     im_original = imread("Images/"+imageName);
+    if(! im_original.data){
+        cout <<  endl << "File not found in the \"Images\" folder. Please provide a valid file name." << endl ;
+        cout << "Example: ./part1 traffic.jpg" << endl;
+        return -1;
+    }
 
     // Convert to grayscale and store in im_gray
     cvtColor(im_original, im_gray, COLOR_BGR2GRAY);
