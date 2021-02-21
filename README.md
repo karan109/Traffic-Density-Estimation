@@ -6,13 +6,17 @@
 ```bash
 make
 ```
-This builds the executable ./part1 and runs an example on the image "traffic.jpg".
+This builds the executable ./part1
 
 ## Run
 ```bash
 ./part1 [arg]
 ```
-Here, [arg] is the name of the image. If not provided, then "traffic.jpg" is used by default.
+Here, [arg] is the name of the image. If not provided, then "empty.jpg" is used by default.
+```bash
+./part1
+```
+runs the code on Images/empty.jpg 
 
 ## Usage
 * Build the executable
