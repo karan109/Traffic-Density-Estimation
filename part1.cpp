@@ -32,7 +32,8 @@ int transformCrop(string imagePath);
 
 // Main
 int main(int argc, char* argv[]){
-    transformCrop("traffic.jpg");
+    String image = (argc == 1) ? "traffic.jpg" : argv[1];
+    transformCrop(image);
     return 0;
 }
 
