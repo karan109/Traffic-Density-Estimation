@@ -1,21 +1,27 @@
-all:
-	g++ part2.cpp -o part2 -pthread -std=c++11 `pkg-config --cflags --libs opencv`
+CC = g++
+CFLAGS = -pthread -std=c++11 
+LDFLAGS = `pkg-config --cflags --libs opencv`
+FILE = part2.cpp
+FILEOUT = part2
+PLOT = Plotting_script/plot.py
+PY = python3
+all: 
+	$(CC) $(FILE) -o $(FILEOUT) $(CFLAGS) $(LDFLAGS) 
 clean:
-	rm part1
-	rm part2
-	rm helpers
+	rm $(FILEOUT)
 	rm -f *.o
 file_clean:
-	rm Crops/*.jpg
-	rm Transforms/*.jpg
-	rm Videos/*.mp4
+	rm Outputs/user_out.txt
+	rm Outputs/user_graph.png
 compress:
-	tar cvzf ../2019CS10699_2019CS50446_ass1_part2.tar.gz .
-run part2:
-	g++ part2.cpp -o part2 -pthread -std=c++11 `pkg-config --cflags --libs opencv`
-	./part2
-	python3 Plotting_script/plot.py
+	tar cvzf ../2019CS10699_2019CS50446_ass1_$(FILEOUT).tar.gz .
+clean_compress:
+	rm ../*.tar.gz .
+run:
+	$(CC) $(FILE) -o $(FILEOUT) $(CFLAGS) $(LDFLAGS) && ./$(FILEOUT)
+	./$(FILEOUT)
+	$(PY) $(PLOT) 
 plot:
-	python3 Plotting_script/plot.py
+	$(PY) $(PLOT)
 
 
