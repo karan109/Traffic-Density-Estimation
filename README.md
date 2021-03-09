@@ -6,31 +6,35 @@
 ```bash
 make
 ```
-This builds the executable ./part1
+This builds the executable ./part2
 
 ## Run
 ```bash
-./part1 [arg]
+./part2 [arg]
 ```
-Here, [arg] is the name of the image. If not provided, then "empty.jpg" is used by default.
+Here, [arg] is the name of the video. If not provided, then "trafficvideo.mp4" is used by default.
 ```bash
-./part1
+./part2
 ```
-runs the code on Images/empty.jpg 
+runs the code on Videos/trafficvideo.mp4 (Note that the video is not available as part of this repository and has to be downloaded by the user)
 
 ## Usage
 * Build the executable
-* Store the original image in the ./Images folder - eg. Images/traffic.jpg
+* Store the original video in the ./Videos folder - eg. Videos/trafficvideo.mp4
 * Execute the following command
 ```bash
-./part1 traffic.jpg
+./part2 trafficvideo.mp4
 ```
-* Select 4 points on the image using left mouse clicks starting from the top left, in a counter-clockwise manner.
-* In case a wrong point is selected, press the 'u' key to UNDO or the 'r' key to RESET and start from the beginning
-* Press the "Enter" key when done with the selection
-* The transformed and cropped images will be visible
-* Press "Enter" to save the images as "Crops/crop_traffic.jpg" and "Transforms/transform_traffic.jpg"
+* 2 windows will open up, showing the Queue Density and the Dynamic Density
+* After every 3 frames, the values of Queue Density and Dynamic Density are printed to the console
+* After the video is completely processed, the density data is automatically stored at Outputs/user_out.txt. The Python plotting script can now be invoked to produce a graph saved to Outputs/user_graph.png
 * Use the "Esc" key at any time to abort and quit the program
+
+## Plot
+```bash
+make plot
+```
+will plot the file Outputs/user_out.txt and save the result to Outputs/user_graph.png
 
 ## Clean
 To remove executables, use

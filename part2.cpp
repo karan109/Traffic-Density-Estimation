@@ -21,8 +21,7 @@ int getDensityData(string file_name){
 
 	// if not success, exit program
 	if (cap.isOpened() == false){
-		cout << "Cannot open the video file. Please provide a valid name." << endl;
-		cin.get(); //wait for any key press
+		cout << "Cannot open the video file. Please provide a valid name (refer to README.md)." << endl;
 		return -1;
 	}
 
@@ -112,5 +111,6 @@ int getDensityData(string file_name){
 		frame_old_difference = frame_difference; // Update old frame
 	}
 	f.close();
+	cout << "Video processed. Density data saved at \"" + output_name + "\"" << endl;
 	return 0;
 }
