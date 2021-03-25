@@ -180,7 +180,7 @@ pair<double, double> getAccuracy(vector<vector<double>> actual, vector<vector<do
 	}
 	result.first /= baseline.size();
 	result.second /= baseline.size();
-	cout<< result.first <<" "<<result.second<<endl;
+	// cout<< result.first <<" "<<result.second<<endl;
 	return {(double)round(10000*(1-tanh(result.first)))/100, (double)round(10000*(1-tanh(result.second)))/100};
 }
 vector<vector<double>> load_file(string file_name = "baseline.txt"){

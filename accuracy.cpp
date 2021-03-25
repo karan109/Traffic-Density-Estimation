@@ -1,7 +1,3 @@
-/*input
-
-*/
-#include <bits/stdc++.h>
 #include "helpers.hpp"
 
 int main(){
