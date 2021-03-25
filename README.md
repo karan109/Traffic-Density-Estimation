@@ -18,7 +18,7 @@ Here, [arg] is the name of the video. If not provided, then "trafficvideo.mp4" i
 ```
 runs the code on Videos/trafficvideo.mp4 (Note that the video is not available as part of this repository and has to be downloaded by the user)
 
-## Usage
+##Usage
 * Build the executable
 * Store the original video in the ./Videos folder - eg. Videos/trafficvideo.mp4
 * Execute the following command

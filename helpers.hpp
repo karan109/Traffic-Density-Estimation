@@ -1,6 +1,8 @@
 // Includes
 #include "opencv2/opencv.hpp"
 #include <vector>
+#include <fstream>
+#include <math.h>
 
 using namespace cv;
 using namespace std;
@@ -30,7 +32,7 @@ Mat grayScale(Mat & img){
 }
 
 // Transform and return cropeed image without any manual input from user
-Mat pre_process(Mat & img, Mat & homography, bool save=false, string imageName="empty.jpg"){
+Mat pre_process(Mat img, Mat homography, bool save=false, string imageName="empty.jpg"){
 	Mat im_transform, im_crop, im_gray = grayScale(img);
 	warpPerspective(im_gray, im_transform, homography, im_gray.size());
 	im_crop = im_transform(RECT_CROP);
@@ -80,4 +82,119 @@ Mat getFlow(Mat & frame_old_difference, Mat & frame_difference){
 
 	// temp_merge distinctly shows moving pixels
 	return temp_merge;
+}
+
+Mat getPart(Mat frame, int part, int num, int mode = 0){
+	int height = frame.size().height;
+	int width = frame.size().width;
+	if(mode == 0){
+		if(num != part) return frame(Rect(0, height*(part-1)/num, width, height/num)).clone();
+		else return frame(Rect(0, height*(part-1)/num, width, height-height*(part-1)/num)).clone();
+	}
+	if(num != part) return frame(Rect(width*(part-1)/num, 0, width/num, height)).clone();
+	else return frame(Rect(width*(part-1)/num, 0, width-width*(part-1)/num, height)).clone();
+}
+
+pair<vector<vector<double>>, int> getDensityDataCustom(VideoCapture &cap, Mat &frame_empty, int step = 3, int part = 1, int num = 1, int th = 0, int mode = 0){
+	// Find homography using a default set of points
+	default_homography = findHomography(DEFAULT_POINTS, GIVEN_POINTS);
+
+	int frame_count = 0;
+	double total_density = 0, dynamic_density = 0; // Average densities over 15 (fps) frames per second
+	Mat frame_old_difference; // Old frame to get optical flow
+
+	frame_empty = pre_process(frame_empty, default_homography); // Apply transformation and crop to background
+	int original_size = frame_empty.size().height * frame_empty.size().width;
+	frame_empty = getPart(frame_empty, part, num, mode);
+
+	int size = frame_empty.size().height * frame_empty.size().width; // Size of frame
+
+	// cout << "Frame_Num,Queue_Density,Dynamic_Density" << endl;
+	// f << "Frame_Num,Queue_Density,Dynamic_Density" << endl;
+	vector<vector<double>> result;
+	while(true){
+
+		Mat frame_current, frame_processed, frame_difference, frame_threshold;
+		bool success = cap.read(frame_current); // read a new frame from video
+		// Exit if no more frames available
+		if(success == false) break;
+		frame_processed = pre_process(frame_current, default_homography); // Apply transformation and crop
+		frame_processed = getPart(frame_processed, part, num, mode);
+
+		absdiff(frame_processed, frame_empty, frame_difference); // Background subtraction
+		threshold(frame_difference, frame_threshold, 40, 255.0, THRESH_BINARY);
+		filter(frame_threshold); // Smoothen and fill gaps
+
+		// Set the old frame to the current frame in case of frame 0
+		if(frame_count == 0) frame_old_difference = frame_difference;
+
+		// flow is an image where all moving pixels are white and all stationary pixels are black
+		Mat flow = getFlow(frame_old_difference, frame_difference);
+		threshold(flow, flow, 23, 255.0, THRESH_BINARY);
+		filter(flow); // Smoothen and fill gaps
+
+		double pixel_ratio = (double) countNonZero(frame_threshold) / size; // To get density
+		double dynamic_pixel_ratio = (double) countNonZero(flow) / size; // To get dynamic density
+
+		total_density += pixel_ratio;
+		dynamic_density += min(dynamic_pixel_ratio, pixel_ratio);
+
+		if(frame_count % step == 0 and frame_count != 0){
+
+			// Every step, evaluate average densities
+			dynamic_density /= step;
+			total_density /= step;
+			result.push_back({(double)frame_count, total_density*size, min(dynamic_density, 0.95 * total_density)*size});
+			// cout << frame_count << "," << total_density << "," << min(dynamic_density, 0.95 * total_density) << " " << size << " " << th << endl;
+			// f << frame_count << "," << total_density << "," << min(dynamic_density, 0.95 * total_density) << endl;
+			
+			// Reset current densities to 0 to prepare for the next second
+			total_density = 0;
+			dynamic_density = 0;
+		}
+
+		frame_count++; // Update frame count
+
+		frame_old_difference = frame_difference; // Update old frame
+	}
+	// f.close();
+	return {result, original_size};
+}
+pair<double, double> getAccuracy(vector<vector<double>> actual, vector<vector<double>> baseline, string metric = "square"){
+	if(baseline.size() != actual.size()){
+		return {-1, -1};
+	}
+	pair<double, double> result;
+	for(int i=0;i<baseline.size();i++){
+		if(metric == "abs"){
+			result.first += abs(baseline[i][1]-actual[i][1]);
+			result.second += abs(baseline[i][2]-actual[i][2]);
+		}
+		else{
+			result.first += (baseline[i][1]-actual[i][1]) * (baseline[i][1]-actual[i][1]);
+			result.second += (baseline[i][2]-actual[i][2]) * (baseline[i][2]-actual[i][2]);
+		}
+	}
+	result.first /= baseline.size();
+	result.second /= baseline.size();
+	cout<< result.first <<" "<<result.second<<endl;
+	return {(double)round(10000*(1-tanh(result.first)))/100, (double)round(10000*(1-tanh(result.second)))/100};
+}
+vector<vector<double>> load_file(string file_name = "baseline.txt"){
+	fstream f("Outputs/"+file_name);
+	vector<vector<double>> result;
+	string line, val;
+	getline(f, line);
+	while(getline(f, line)){
+		stringstream s(line);
+		vector<double> temp;
+		while(getline(s, val, ',')){
+			temp.push_back(stod(val));
+		}
+		if(temp.size() == 3){
+			result.push_back(temp);
+		}
+	}
+	f.close();
+	return result;
 }
