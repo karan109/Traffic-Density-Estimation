@@ -1,11 +1,4 @@
-/*input
-
-*/
-#include <bits/stdc++.h>
 #include "helpers.hpp"
-#include <chrono>
-
-using namespace std::chrono;
 
 string file_name = "trafficvideo.mp4";
 VideoCapture cap;
@@ -33,9 +26,6 @@ int main(){
     }
     f << duration.count();
     cout << "Time taken by function: " << duration.count() << " microseconds" << endl;
-    vector<vector<double>> baseline = load_file();
-    // pair<double, double> accuracy = getAccuracy(final_result, baseline, "abs");
-    // cout << accuracy.first << " " << accuracy.second << " " << endl;
     f.close();
 	return 0;
 }

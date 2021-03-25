@@ -1,13 +1,6 @@
-#include "opencv2/opencv.hpp"
-#include <vector>
-#include <chrono>
-#include <thread>
 #include "helpers.hpp"
 
-using namespace cv;
-using namespace std;
-using namespace std::chrono;
-#define THREADS 6
+#define THREADS 7
 
 int img_size;
 struct thread_data {

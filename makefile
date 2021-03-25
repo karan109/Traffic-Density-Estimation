@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -pthread -std=c++11 
+CFLAGS = -lpthread -pthread -std=c++11 
 LDFLAGS = `pkg-config --cflags --libs opencv`
 FILE = part2.cpp
 FILEOUT = part2
@@ -12,11 +12,11 @@ clean:
 	rm part1
 	rm -f *.o
 file_clean:
-	rm Outputs/user_out.txt
-	rm Outputs/user_graph.png
 	rm Crops/*.jpg
 	rm Transforms/*.jpg
 	rm Videos/*.mp4
+	rm Outputs/user_out.txt
+	rm Outputs/user_graph.png
 compress:
 	tar cvzf ../2019CS10699_2019CS50446_ass1_$(FILEOUT).tar.gz .
 run:
@@ -24,5 +24,12 @@ run:
 	$(PY) $(PLOT) 
 plot:
 	$(PY) $(PLOT)
+
+baseline:
+	$(CC) baseline.cpp -o baseline $(CFLAGS) $(LDFLAGS) 
+	./baseline
+method3:
+	$(CC) method3.cpp -o method3 $(CFLAGS) $(LDFLAGS) 
+	./method3
 
 
