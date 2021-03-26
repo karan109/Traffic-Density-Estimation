@@ -1,6 +1,5 @@
 // Includes
 #include "helpers.hpp"
-#include <fstream>
 
 int getDensityData(string file_name);
 

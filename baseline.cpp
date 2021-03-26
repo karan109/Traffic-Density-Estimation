@@ -6,7 +6,7 @@ int main(){
 	cap.open("Videos/"+file_name);
 	Mat empty = imread("Images/empty.jpg");
 	auto start = high_resolution_clock::now();
-	auto temp = getDensityDataCustom(cap, empty, 3, 1, 1);
+	auto temp = getDensityDataSpatial(cap, empty, 1, 1, 1);
 	vector<vector<double>> result = temp.first;
     int img_size = temp.second;
 	cap.release();
