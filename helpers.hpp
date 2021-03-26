@@ -4,7 +4,6 @@
 #include <fstream>
 #include <math.h>
 #include <chrono>
-#include <thread>
 
 using namespace std::chrono;
 using namespace cv;
@@ -87,6 +86,7 @@ Mat getFlow(Mat & frame_old_difference, Mat & frame_difference){
 	return temp_merge;
 }
 
+// For example, if part == 2, num == 5, this returns the second rectangle if an image is divided into 5 rectangles
 Mat getPart(Mat frame, int part, int num, int mode = 0){
 	int height = frame.size().height;
 	int width = frame.size().width;
@@ -98,43 +98,42 @@ Mat getPart(Mat frame, int part, int num, int mode = 0){
 	else return frame(Rect(width*(part-1)/num, 0, width-width*(part-1)/num, height)).clone();
 }
 
-pair<vector<vector<double>>, int> getDensityDataSpatial(VideoCapture &cap, Mat &frame_empty, int step = 3, int part = 1, int num = 1, int th = 0, int mode = 0){
-	// Find homography using a default set of points
+// Function to process various parts of an image spatially (Method 3)
+pair<vector<vector<double>>, int> getDensityDataSpatial(VideoCapture &cap, Mat &frame_empty, int step = 3, int part = 1, int num = 1, int mode = 0){
 	default_homography = findHomography(DEFAULT_POINTS, GIVEN_POINTS);
 
 	int frame_count = 0;
-	double total_density = 0, dynamic_density = 0; // Average densities over 15 (fps) frames per second
-	Mat frame_old_difference; // Old frame to get optical flow
+	double total_density = 0, dynamic_density = 0;
+	Mat frame_old_difference;
 
-	frame_empty = pre_process(frame_empty, default_homography); // Apply transformation and crop to background
+	frame_empty = pre_process(frame_empty, default_homography);
 	
 	int original_size = frame_empty.size().height * frame_empty.size().width;
 	frame_empty = getPart(frame_empty, part, num, mode);
 
 	int size = frame_empty.size().height * frame_empty.size().width; // Size of frame
 
+	vector<vector<double>> result; // result stored as a vector of 3-D vectors
 	
-	vector<vector<double>> result;
 	while(true){
 
 		Mat frame_current, frame_processed, frame_difference, frame_threshold;
-		bool success = cap.read(frame_current); // read a new frame from video
-		// Exit if no more frames available
+		bool success = cap.read(frame_current);
+		
 		if(success == false) break;
-		frame_processed = pre_process(frame_current, default_homography); // Apply transformation and crop
-		frame_processed = getPart(frame_processed, part, num, mode);
+		frame_processed = pre_process(frame_current, default_homography);
+		
+		frame_processed = getPart(frame_processed, part, num, mode); // Get a rectangular region of the frame
 
-		absdiff(frame_processed, frame_empty, frame_difference); // Background subtraction
+		absdiff(frame_processed, frame_empty, frame_difference);
 		threshold(frame_difference, frame_threshold, 40, 255.0, THRESH_BINARY);
-		filter(frame_threshold); // Smoothen and fill gaps
+		filter(frame_threshold);
 
-		// Set the old frame to the current frame in case of frame 0
 		if(frame_count == 0) frame_old_difference = frame_difference;
 
-		// flow is an image where all moving pixels are white and all stationary pixels are black
 		Mat flow = getFlow(frame_old_difference, frame_difference);
 		threshold(flow, flow, 23, 255.0, THRESH_BINARY);
-		filter(flow); // Smoothen and fill gaps
+		filter(flow);
 
 		double pixel_ratio = (double) countNonZero(frame_threshold) / size; // To get density
 		double dynamic_pixel_ratio = (double) countNonZero(flow) / size; // To get dynamic density
@@ -142,68 +141,34 @@ pair<vector<vector<double>>, int> getDensityDataSpatial(VideoCapture &cap, Mat &
 		total_density += pixel_ratio;
 		dynamic_density += min(dynamic_pixel_ratio, pixel_ratio);
 
+		// Skip every step number of frames
 		if(frame_count % step == 0 and frame_count != 0){
-
-			// Every step, evaluate average densities
 			dynamic_density /= step;
 			total_density /= step;
-			result.push_back({(double)frame_count, total_density*size, min(dynamic_density, 0.95 * total_density)*size});
+
+			// Add frame data to result vector
+			result.push_back( { (double)frame_count, total_density * size, min(dynamic_density, 0.95 * total_density) * size} );
 			
 
 			total_density = 0;
 			dynamic_density = 0;
 		}
 
-		frame_count++; // Update frame count
+		frame_count++;
 
-		frame_old_difference = frame_difference; // Update old frame
+		frame_old_difference = frame_difference;
 	}
+	// Return the frame data, with the original size of cropped image
+	// Size is required to calculate pixel density
 	return {result, original_size};
 }
-pair<double, double> getAccuracy(vector<vector<double>> actual, vector<vector<double>> baseline, string metric = "square"){
-	if(baseline.size() != actual.size()){
-		return {-1, -1};
-	}
-	pair<double, double> result;
-	for(int i=0;i<baseline.size();i++){
-		if(metric == "abs"){
-			result.first += abs(baseline[i][1]-actual[i][1]);
-			result.second += abs(baseline[i][2]-actual[i][2]);
-		}
-		else{
-			result.first += (baseline[i][1]-actual[i][1]) * (baseline[i][1]-actual[i][1]);
-			result.second += (baseline[i][2]-actual[i][2]) * (baseline[i][2]-actual[i][2]);
-		}
-	}
-	result.first /= baseline.size();
-	result.second /= baseline.size();
-	// cout<< result.first <<" "<<result.second<<endl;
-	return {(double)round(10000*(1-tanh(result.first)))/100, (double)round(10000*(1-tanh(result.second)))/100};
-}
-vector<vector<double>> load_file(string file_name = "baseline.txt"){
-	fstream f("Outputs/"+file_name);
-	vector<vector<double>> result;
-	string line, val;
-	getline(f, line);
-	while(getline(f, line)){
-		stringstream s(line);
-		vector<double> temp;
-		while(getline(s, val, ',')){
-			temp.push_back(stod(val));
-		}
-		if(temp.size() == 3){
-			result.push_back(temp);
-		}
-	}
-	f.close();
-	return result;
-}
 
-vector<vector<double>> getDensityDataTemporal(VideoCapture &cap, Mat &frame_empty, int step = 3, int part = 1, int num = 1, int th = 0){
+// Function to process various parts of a video temporally (Method 4)
+vector<vector<double>> getDensityDataTemporal(VideoCapture &cap, Mat &frame_empty, int step = 3, int part = 1, int num = 1){
 	
 	default_homography = findHomography(DEFAULT_POINTS, GIVEN_POINTS);
 
-	vector<vector<double>> result;
+	vector<vector<double>> result; // Vector to store the result
 
 	int frames = cap.get(CAP_PROP_FRAME_COUNT);
 
@@ -216,45 +181,49 @@ vector<vector<double>> getDensityDataTemporal(VideoCapture &cap, Mat &frame_empt
 	if(part == num) dur += frames % num;
 	dur += start - actual_start;
 
-	// cout << dur << " " << start << " " << actual_start << endl;
+	// actual_start gives the frame number to start processing
+	// dur gives the total duration to process for
+	// This is done to handle all corner cases when frames are divided temporally to make sure result is complete
 
 	int frame_count = 0;
-	double total_density = 0, dynamic_density = 0; // Average densities over 15 (fps) frames per second
-	Mat frame_old_difference; // Old frame to get optical flow
+	double total_density = 0, dynamic_density = 0;
+	Mat frame_old_difference;
 
 	frame_empty = pre_process(frame_empty, default_homography); // Apply transformation and crop to background
 
 	int size = frame_empty.size().height * frame_empty.size().width; // Size of frame
 
-	// cap.set(CAP_PROP_POS_FRAMES, actual_start);
 	Mat frame_current;
 	int ct = 0;
+
+	// Seek the frame number actual_start to begin processing
 	while(ct++ < actual_start){
 		cap.read(frame_current);
 	}
+
+	// Begin processing from actual_start
 	while(true){
-		if(frame_count == dur) break;
+
+		if(frame_count == dur) break; // Exit if the number of frames processed exceeds the duration for this thread
+
 		Mat frame_processed, frame_difference, frame_threshold;
-		bool success = cap.read(frame_current); // read a new frame from video
-		// Exit if no more frames available
+		bool success = cap.read(frame_current);
 		if(success == false) break;
-		frame_processed = pre_process(frame_current, default_homography); // Apply transformation and crop
+		frame_processed = pre_process(frame_current, default_homography);
 
-		absdiff(frame_processed, frame_empty, frame_difference); // Background subtraction
+		absdiff(frame_processed, frame_empty, frame_difference);
 		threshold(frame_difference, frame_threshold, 40, 255.0, THRESH_BINARY);
-		filter(frame_threshold); // Smoothen and fill gaps
+		filter(frame_threshold);
 
-		// Set the old frame to the current frame in case of frame 0
 		if(frame_count == 0) frame_old_difference = frame_difference;
 
-		// flow is an image where all moving pixels are white and all stationary pixels are black
 		Mat flow = getFlow(frame_old_difference, frame_difference);
 		threshold(flow, flow, 23, 255.0, THRESH_BINARY);
-		filter(flow); // Smoothen and fill gaps
+		filter(flow);
 
 		double pixel_ratio = (double) countNonZero(frame_threshold) / size; // To get density
 		double dynamic_pixel_ratio = (double) countNonZero(flow) / size; // To get dynamic density
-		// imshow("Queue Density", flow);
+		
 		if(frame_count != 0){
 			total_density += pixel_ratio;
 			dynamic_density += min(dynamic_pixel_ratio, pixel_ratio);
@@ -264,18 +233,112 @@ vector<vector<double>> getDensityDataTemporal(VideoCapture &cap, Mat &frame_empt
 			dynamic_density = 0;
 		}
 
+		// Skip every step number of frames
 		if((frame_count + actual_start) % step == 0 and frame_count != 0){
 			dynamic_density /= step;
 			total_density /= step;
-			result.push_back({(double)actual_start + frame_count, total_density, min(dynamic_density, 0.95 * total_density)});
+
+			// Add frame data to result vector
+			result.push_back( { (double) actual_start + frame_count, total_density, min(dynamic_density, 0.95 * total_density) } );
 
 			total_density = 0;
 			dynamic_density = 0;
 		}
 
-		frame_count++; // Update frame count
+		frame_count++;
 
-		frame_old_difference = frame_difference; // Update old frame
+		frame_old_difference = frame_difference;
 	}
 	return result;
+}
+
+// Given a baseline, this calculates the accuracy of Queue density and Dynamic density for a result
+pair<double, double> getAccuracy(vector<vector<double>> actual, vector<vector<double>> baseline, string metric = "square"){
+	
+	// The metric can be average absolute error or average square error
+
+	if(baseline.size() != actual.size()){
+		return {-1, -1};
+	}
+	pair<double, double> result;
+	for(int i = 0; i < baseline.size(); i++){
+		if(metric == "abs"){
+			result.first += abs( baseline[i][1] - actual[i][1] );
+			result.second += abs( baseline[i][2] - actual[i][2] );
+		}
+		else{
+			result.first += ( baseline[i][1]-actual[i][1] ) * ( baseline[i][1] - actual[i][1] );
+			result.second += ( baseline[i][2]-actual[i][2] ) * ( baseline[i][2] - actual[i][2] );
+		}
+	}
+	result.first /= baseline.size();
+	result.second /= baseline.size();
+	
+	// Return a pair of accuracies of Queue and Dynamic Densities
+	return {(double)round(10000*(1-tanh(result.first)))/100, (double)round(10000*(1-tanh(result.second)))/100};
+}
+
+// Loads a result file (with frame data) into a vector for processing
+vector<vector<double>> load_file(string file_name = "baseline.txt"){
+
+	fstream f("Outputs/"+file_name);
+	vector<vector<double>> result;
+	string line, val;
+	getline(f, line);
+
+	while(getline(f, line)){
+		stringstream s(line);
+		vector<double> temp;
+		while(getline(s, val, ',')){
+			temp.push_back(stod(val));
+		}
+		if(temp.size() == 3){
+			result.push_back(temp);
+		}
+	}
+
+	f.close();
+	return result;
+}
+
+// Function to check if given string is an integer
+int isint(string var)
+{
+
+    if (var.size() > 7 or var.size() < 1)
+        return 0;
+
+    if (var[1] == 'x' || var[2] == 'x')
+    {
+        int idx = 0;
+        if (var[0] == '-')
+        {
+            idx = 1;
+        }
+        if (var[idx] != '0')
+            return 0;
+        for (int i = idx + 2; i < var.size(); i++)
+        {
+            if (!isxdigit(var[i]))
+                return 0;
+        }
+        int d = stoi(var, 0, 16);
+        if (d < -(1 << 15) or d > (1 << 15) - 1)
+            return 0;
+        return 16;
+    }
+    else
+    {
+        if (!isdigit(var[0]) and var[0] != '-')
+            return 0;
+        for (int i = 1; i < var.size(); i++)
+        {
+            if (!isdigit(var[i]))
+                return 0;
+        }
+        int d = stoi(var);
+        if (d < -(1 << 15) or d > (1 << 15) - 1)
+            return 0;
+        return 10;
+    }
 }
