@@ -51,6 +51,7 @@ int main(int argc, char* argv[]){
     return 0;
 }
 
+// Function declaration of method 3
 void method3(string file_name){
 
     // Array of pthreads
@@ -91,16 +92,16 @@ void method3(string file_name){
 
     // Compute the final result by taking the weighted average of all densities returned by individual threads
     final_result.assign(result[0].size(), vector<double>(result[0][0].size(), 0));
-    for(int i=0;i<result.size();i++){
-        for(int j=0;j<result[i].size();j++){
-            for(int k=1;k<result[i][j].size();k++){
+    for(int i = 0; i < result.size(); i++){
+        for(int j = 0; j < result[i].size(); j++){
+            for(int k = 1; k < result[i][j].size(); k++){
                 final_result[j][k] += result[i][j][k];
             }
             final_result[j][0] = result[0][j][0];
         }
     }
-    for(int j=0;j<final_result.size();j++){
-        for(int k=1;k<final_result[j].size();k++){
+    for(int j = 0; j < final_result.size(); j++){
+        for(int k = 1; k < final_result[j].size(); k++){
             final_result[j][k] /= img_size;
         }
     }
