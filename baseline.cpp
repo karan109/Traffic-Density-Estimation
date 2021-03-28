@@ -24,7 +24,11 @@ void baseline(string file_name){
     auto start = high_resolution_clock::now(); // Start clock to get run-time
 
     // Extract frame data
-    vector<vector<double>> result = getDensityDataTemporal(cap, empty);
+    vector<vector<double>> result = getDensityData(cap);
+
+    // vector<vector<double>> result = getDensityDataTemporal(cap, empty);
+     
+    // --------------remember changing i = 0 / 1 loop at line 43
 
     cap.release(); // Close the VideoCapture
 
@@ -38,7 +42,7 @@ void baseline(string file_name){
     f << "Frame_Num,Queue_Density,Dynamic_Density" << endl;
     cout << "Frame_Num,Queue_Density,Dynamic_Density" << endl;
 
-    for(int i=0;i<result.size();i++){
+    for(int i = 1 ; i < result.size() ; i++ ) {
         cout << result[i][0] << "," << result[i][1] << "," << result[i][2] << endl;
         f << result[i][0] << "," << result[i][1] << "," << result[i][2] << endl;
     }
