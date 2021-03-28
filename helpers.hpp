@@ -99,7 +99,7 @@ Mat getPart(Mat frame, int part, int num, int mode = 0){
 }
 
 // Function to process various parts of an image spatially (Method 3)
-pair<vector<vector<double>>, int> getDensityDataSpatial(VideoCapture &cap, Mat &frame_empty, int step = 3, int part = 1, int num = 1, int mode = 0){
+pair<vector<vector<double>>, int> getDensityDataSpatial(VideoCapture &cap, Mat &frame_empty, int step = 1, int part = 1, int num = 1, int mode = 0){
 	default_homography = findHomography(DEFAULT_POINTS, GIVEN_POINTS);
 
 	int frame_count = 0;
@@ -138,8 +138,14 @@ pair<vector<vector<double>>, int> getDensityDataSpatial(VideoCapture &cap, Mat &
 		double pixel_ratio = (double) countNonZero(frame_threshold) / size; // To get density
 		double dynamic_pixel_ratio = (double) countNonZero(flow) / size; // To get dynamic density
 
-		total_density += pixel_ratio;
-		dynamic_density += min(dynamic_pixel_ratio, pixel_ratio);
+		if(frame_count != 0){
+			total_density += pixel_ratio;
+			dynamic_density += min(dynamic_pixel_ratio, pixel_ratio);
+		}
+		else{
+			total_density = 0;
+			dynamic_density = 0;
+		}
 
 		// Skip every step number of frames
 		if(frame_count % step == 0 and frame_count != 0){
@@ -164,7 +170,7 @@ pair<vector<vector<double>>, int> getDensityDataSpatial(VideoCapture &cap, Mat &
 }
 
 // Function to process various parts of a video temporally (Method 4)
-vector<vector<double>> getDensityDataTemporal(VideoCapture &cap, Mat &frame_empty, int step = 3, int part = 1, int num = 1){
+vector<vector<double>> getDensityDataTemporal(VideoCapture &cap, Mat &frame_empty, int step = 1, int part = 1, int num = 1){
 	
 	default_homography = findHomography(DEFAULT_POINTS, GIVEN_POINTS);
 

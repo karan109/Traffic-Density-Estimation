@@ -24,7 +24,7 @@ void * temporal(void * arg) {
 
     Mat frame_empty = my_data->empty;
     int part = my_data->part;
-    int step = 3;
+    int step = 1;
 
     // Get individual result of thread
     result[part-1] = getDensityDataTemporal(my_data->cap, my_data->empty, step, my_data->part, THREADS);

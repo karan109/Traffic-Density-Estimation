@@ -25,7 +25,7 @@ void * spatial(void * arg) {
 
 	Mat frame_empty = my_data->empty;
 	int part = my_data->part;
-	int step = 3;
+	int step = 1;
 
     // Get individual result of thread
     auto temp = getDensityDataSpatial(my_data->cap, my_data->empty, step, my_data->part, THREADS);
@@ -75,7 +75,7 @@ void method3(string file_name){
 
         data[i].empty = imread("Images/empty.jpg");
         data[i].part = i+1;
-        pthread_create(&threads[i], NULL, spatial, (void*)&data[i]);
+        pthread_create(& threads[i], NULL, spatial, (void * ) & data[i]);
     }
 
     for(int i=0;i<THREADS;i++){
