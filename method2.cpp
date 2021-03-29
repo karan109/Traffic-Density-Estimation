@@ -6,7 +6,6 @@ int Y;
 int original_X;
 int original_Y;
 string output_file;
-fstream f(output_file, ios::out);
 vector<vector<double>> result;
 
 
@@ -70,13 +69,12 @@ void method2 () {
 
 
     // Output file
-    output_file = "Outputs/Method2/["+to_string(X)+ " x " + to_string(Y) + "].txt";
+    output_file = "Outputs/Method2/"+to_string(X)+ "x" + to_string(Y) + ".txt";
+    fstream f(output_file, ios::out);
 
-    cout << "Frame_Num,Queue_Density,Dynamic_Density" << endl;
     f << "Frame_Num,Queue_Density,Dynamic_Density" << endl;
 
     for(int i = 1 ; i < result.size() ; i++) { 
-        cout << result[i][0] << "," << result[i][1] << "," << result[i][2] << endl;
         f << result[i][0] << "," << result[i][1] << "," << result[i][2] << endl;
     }
 

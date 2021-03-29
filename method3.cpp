@@ -111,10 +111,10 @@ void method3(string file_name){
     fstream f(output_file, ios::out);
     f << "Frame_Num,Queue_Density,Dynamic_Density" << endl;
 
-    cout << "Frame_Num,Queue_Density,Dynamic_Density" << endl;
+    // cout << "Frame_Num,Queue_Density,Dynamic_Density" << endl;
 
     for(int i=0;i<final_result.size();i++){
-        cout << final_result[i][0] << "," << final_result[i][1] << "," << final_result[i][2] << endl;
+        // cout << final_result[i][0] << "," << final_result[i][1] << "," << final_result[i][2] << endl;
         f << final_result[i][0] << "," << final_result[i][1] << "," << final_result[i][2] << endl;
     }
 

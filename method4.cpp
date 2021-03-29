@@ -100,7 +100,7 @@ void method4(string file_name){
 
     // Output result to a file
     for(int i=0;i<final_result.size();i++){
-        cout << final_result[i][0] << "," << final_result[i][1] << "," << final_result[i][2] << endl;
+        // cout << final_result[i][0] << "," << final_result[i][1] << "," << final_result[i][2] << endl;
         f << final_result[i][0] << "," << final_result[i][1] << "," << final_result[i][2] << endl;
     }
 

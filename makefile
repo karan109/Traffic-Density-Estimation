@@ -8,7 +8,7 @@ all:
 # 	$(CC) part2.cpp -o part2 $(CFLAGS) $(LDFLAGS)
 # 	./part2
 # 	$(CC) accuracy.cpp -o accuracy $(CFLAGS) $(LDFLAGS)
-	$(CC) bonus.cpp -o bonus $(CFLAGS) $(LDFLAGS)
+# 	$(CC) bonus.cpp -o bonus $(CFLAGS) $(LDFLAGS)
 # 	$(CC) baseline.cpp -o baseline $(CFLAGS) $(LDFLAGS)
 # 	$(CC) method1.cpp -o method1 $(CFLAGS) $(LDFLAGS)
 # 	$(CC) method3.cpp -o method3 $(CFLAGS) $(LDFLAGS)
@@ -22,20 +22,33 @@ all:
 	$(CC) accuracy.cpp -o accuracy $(CFLAGS) $(LDFLAGS)
 	$(CC) baseline.cpp -o baseline $(CFLAGS) $(LDFLAGS)
 
-baseline:
-	$(CC) baseline.cpp -o baseline $(CFLAGS) $(LDFLAGS)
-method1:
-	$(CC) method1.cpp -o method1 $(CFLAGS) $(LDFLAGS)
-method2:
-	$(CC) method2.cpp -o method2 $(CFLAGS) $(LDFLAGS)
+# baseline:
+# 	$(CC) baseline.cpp -o baseline $(CFLAGS) $(LDFLAGS)
+# method1:
+# 	$(CC) method1.cpp -o method1 $(CFLAGS) $(LDFLAGS)
+# method2:
+# 	$(CC) method2.cpp -o method2 $(CFLAGS) $(LDFLAGS)
 
 run_baseline:
 	./baseline trafficvideo.mp4
+
 run_method1:
-	./method1 trafficvideo.mp4 5
+	./method1 trafficvideo.mp4 1
+	./method1 trafficvideo.mp4 2
+	./method1 trafficvideo.mp4 4
+	./method1 trafficvideo.mp4 6
+	./method1 trafficvideo.mp4 8
+	./method1 trafficvideo.mp4 10
+	./method1 trafficvideo.mp4 20
 
 run_method2:
-	./method2 trafficvideo.mp4 1280 720 
+	./method2 trafficvideo.mp4
+	./method2 trafficvideo.mp4 1280 720
+	./method2 trafficvideo.mp4 853 480
+	./method2 trafficvideo.mp4 640 360
+	./method2 trafficvideo.mp4 426 240
+	./method2 trafficvideo.mp4 3860 2160
+
 clean:
 	rm method1
 	rm method2
