@@ -44,6 +44,16 @@ Mat pre_process(Mat img, Mat homography, bool save=false, string imageName="empt
 	return im_crop;
 }
 
+Mat pre_process_(Mat img, Mat homography, bool save=false, string imageName="empty.jpg"){
+	Mat im_transform, im_crop;
+	warpPerspective(img, im_transform, homography, img.size());
+	im_crop = im_transform(RECT_CROP);
+	if(save){
+		imwrite("Crops/crop_" + imageName, im_crop);
+	}
+	return im_crop;
+}
+
 // Smoothen and fill gaps
 void filter(Mat & img){
 	Mat result;
@@ -85,6 +95,42 @@ Mat getFlow(Mat & frame_old_difference, Mat & frame_difference){
 	// temp_merge distinctly shows moving pixels
 	return temp_merge;
 }
+
+Mat getSparseFlow(Mat & frame_old_difference, Mat & frame_difference, Mat & temp){
+	vector<Scalar> colors;
+    RNG rng;
+    for(int i = 0; i < 100; i++)
+    {
+        int r = rng.uniform(0, 256);
+        int g = rng.uniform(0, 256);
+        int b = rng.uniform(0, 256);
+        colors.push_back(Scalar(r,g,b));
+    }
+    vector<Point2f> p0, p1;
+    goodFeaturesToTrack(frame_difference, p0, 100, 0.3, 7, Mat(), 7, false, 0.04);
+	Mat mask = Mat::zeros(temp.size(), temp.type());
+	vector<uchar> status;
+    vector<float> err;
+    TermCriteria criteria = TermCriteria((TermCriteria::COUNT) + (TermCriteria::EPS), 10, 0.03);
+    calcOpticalFlowPyrLK(frame_old_difference, frame_difference, p0, p1, status, err, Size(15,15), 2, criteria);
+    vector<Point2f> good_new;
+    for(uint i = 0; i < p0.size(); i++)
+    {
+        // Select good points
+        if(status[i] == 1) {
+            good_new.push_back(p1[i]);
+            // draw the tracks
+            line(mask,p1[i], p0[i], colors[i], 2);
+            circle(temp, p1[i], 5, colors[i], -1);
+        }
+    }
+    Mat img;
+    add(temp, mask, img);
+    img = grayScale(img);
+    return img;
+	// return getFlow(frame_old_difference, frame_difference);
+}
+
 
 // For example, if part == 2, num == 5, this returns the second rectangle if an image is divided into 5 rectangles
 Mat getPart(Mat frame, int part, int num, int mode = 0){
@@ -257,6 +303,82 @@ vector<vector<double>> getDensityDataTemporal(VideoCapture &cap, Mat &frame_empt
 	}
 	return result;
 }
+
+// Function to process video with sparse optical flow (Bonus)
+vector<vector<double>> getDensityDataSparse(string file_name, Mat &frame_empty, int step = 1){
+	
+	VideoCapture cap;
+	cap.open("Videos/"+file_name); // Open video file
+
+	default_homography = findHomography(DEFAULT_POINTS, GIVEN_POINTS);
+
+	vector<vector<double>> result; // Vector to store the result
+
+	int frame_count = 0;
+	double total_density = 0, dynamic_density = 0;
+	Mat frame_old_difference;
+
+	frame_empty = pre_process(frame_empty, default_homography); // Apply transformation and crop to background
+
+	int size = frame_empty.size().height * frame_empty.size().width; // Size of frame
+
+	Mat frame0;
+
+	// Begin processing from actual_start
+	while(true){
+
+		Mat frame_current, frame_processed, frame_difference, frame_threshold;
+		bool success = cap.read(frame_current);
+		if(success == false) break;
+		frame_processed = pre_process(frame_current, default_homography);
+
+		absdiff(frame_processed, frame_empty, frame_difference);
+		threshold(frame_difference, frame_threshold, 40, 255.0, THRESH_BINARY);
+		filter(frame_threshold);
+
+		if(frame_count == 0){ frame_old_difference = frame_difference; frame0 = frame_current;}
+
+		Mat temp = pre_process_(frame0, default_homography);
+
+		Mat flow = getSparseFlow(frame_old_difference, frame_difference, temp);
+		threshold(flow, flow, 230, 255.0, THRESH_BINARY);
+		// filter(flow);
+
+		double pixel_ratio = (double) countNonZero(frame_threshold) / size; // To get density
+		double dynamic_pixel_ratio = (double) countNonZero(flow) / size; // To get dynamic density
+		
+		if(frame_count != 0){
+			total_density += pixel_ratio;
+			dynamic_density += min(dynamic_pixel_ratio, pixel_ratio);
+		}
+		else{
+			total_density = 0;
+			dynamic_density = 0;
+		}
+		// imshow("dynamic", flow);
+		// Skip every step number of frames
+		if((frame_count) % step == 0 and frame_count != 0){
+			dynamic_density /= step;
+			total_density /= step;
+
+			// Add frame data to result vector
+			result.push_back( { (double)frame_count, total_density, min(dynamic_density, 0.95 * total_density) } );
+
+			cout << frame_count << "," << total_density << "," << min(dynamic_density, 0.95 * total_density) << endl;
+
+			total_density = 0;
+			dynamic_density = 0;
+		}
+
+		frame_count++;
+
+		frame_old_difference = frame_difference;
+	}
+	cap.release(); // Close the VideoCapture
+	return result;
+}
+
+
 
 // Given a baseline, this calculates the accuracy of Queue density and Dynamic density for a result
 pair<double, double> getAccuracy(vector<vector<double>> actual, vector<vector<double>> baseline, string metric = "square"){
