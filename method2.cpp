@@ -28,14 +28,14 @@ int main(int argc, char* argv[]){
     getres.release(); 
 
     if (argc >= 3) {
-        if(!isint(argv[2]) || argv[2] <= 0 ) {
+        if(!isint(argv[2]) || stoi(argv[2]) <= 0 ) {
             cout << "X resolution is not a positive integer." << endl;
             return 0;
         }
         X = stoi(argv[2]);        
     }
     if (argc == 4) {
-        if(!isint(argv[3]) || argv[3] <= 0 ) {
+        if(!isint(argv[3]) || stoi(argv[3]) <= 0 ) {
             cout << "Y resolution is not a positive integer." << endl;
             return 0;
         }

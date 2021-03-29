@@ -4,7 +4,6 @@ LDFLAGS = `pkg-config --cflags --libs opencv`
 PLOT = Plotting_script/plot.py
 PY = python3
 all: 
-<<<<<<< HEAD
 # 	$(CC) part1.cpp -o part1 $(CFLAGS) $(LDFLAGS)
 # 	$(CC) part2.cpp -o part2 $(CFLAGS) $(LDFLAGS)
 # 	./part2
@@ -14,7 +13,6 @@ all:
 # 	$(CC) method1.cpp -o method1 $(CFLAGS) $(LDFLAGS)
 # 	$(CC) method3.cpp -o method3 $(CFLAGS) $(LDFLAGS)
 # 	$(CC) method4.cpp -o method4 $(CFLAGS) $(LDFLAGS)
-=======
 	$(CC) part1.cpp -o part1 $(CFLAGS) $(LDFLAGS)
 	$(CC) part2.cpp -o part2 $(CFLAGS) $(LDFLAGS)
 	$(CC) method1.cpp -o method1 $(CFLAGS) $(LDFLAGS)
@@ -38,8 +36,6 @@ run_method1:
 
 run_method2:
 	./method2 trafficvideo.mp4 1280 720 
-
->>>>>>> origin/master
 clean:
 	rm method1
 	rm method2

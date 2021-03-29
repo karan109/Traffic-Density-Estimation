@@ -4,7 +4,6 @@ int X; //number of frames to skip
 string file_name = "trafficvideo.mp4";
 vector<vector<double>> result;
 string output_file;
-fstream f(output_file, ios::out);
 
 // Function declaration of method 1
 void method1();
@@ -14,7 +13,7 @@ int main(int argc, char* argv[]){
         cout << "Incorrect number of arguments (refer to README.md)." << endl;
         return 0;
     }
-    if(!isint(argv[2]) || argv[2] <= 0 ){
+    if(!isint(argv[2]) || stoi(argv[2]) <= 0 ){
         cout << "Number of frames to skip given is not a positive integer." << endl;
         return 0;
     }
@@ -48,11 +47,13 @@ void method1 () {
 	// Output file
 	output_file = "Outputs/Method1/"+to_string(X)+".txt";
 
-	cout << "Frame_Num,Queue_Density,Dynamic_Density" << endl;
+    fstream f(output_file, ios::out);
+    
+	// cout << "Frame_Num,Queue_Density,Dynamic_Density" << endl;
 	f << "Frame_Num,Queue_Density,Dynamic_Density" << endl;
 
 	for(int i = 1 ; i < result.size() ; i++) { 
-        cout << result[i][0] << "," << result[i][1] << "," << result[i][2] << endl;
+        // cout << result[i][0] << "," << result[i][1] << "," << result[i][2] << endl;
         f << result[i][0] << "," << result[i][1] << "," << result[i][2] << endl;
     }
 
