@@ -26,6 +26,12 @@ Mat default_homography;
 
 // Functions
 
+// auxilary printing function
+void print_result(vector<vector<double>> &result, int i ) {
+	cout << result[i][0] << "," << result[i][1] << "," << result[i][2] << endl;
+}
+
+
 // Convert image to grayscale
 Mat grayScale(Mat & img){
 	Mat im_gray;
@@ -469,4 +475,297 @@ int isint(string var)
             return 0;
         return 10;
     }
+}
+
+vector<vector<double>> getDensityDataSkips (VideoCapture &cap, int X = 1) {
+
+	vector<vector<double>> result;
+
+	default_homography = findHomography(DEFAULT_POINTS, GIVEN_POINTS); 
+	Mat frame_empty = imread("Images/empty.jpg");
+	frame_empty = pre_process(frame_empty, default_homography);
+	Mat frame_prev;
+	int frame_count = 0;
+	double total_density = 0, dynamic_density = 0;
+
+	while(true) {
+
+		Mat frame_current; 
+		Mat frame_processed;
+		Mat frame_prev_processed; 
+		Mat frame_threshold;
+		Mat frame_difference; // need to be local or clear it 
+		Mat frame_prev_difference; // need to be local or clear it 
+
+		bool success = cap.read(frame_current);
+		if (success == false) break;
+
+		if (frame_count % X != 0) {
+			result.push_back( { (double) frame_count, result[frame_count - 1][1], result[frame_count - 1][2] });
+
+			// print_result(result, frame_count);	
+			
+			frame_count++;
+			frame_prev = frame_current;
+			continue;
+		}
+
+		frame_processed = pre_process(frame_current, default_homography); 
+		absdiff(frame_processed, frame_empty, frame_difference); 
+
+		threshold(frame_difference, frame_threshold, 40, 255.0, THRESH_BINARY);
+		filter(frame_threshold); 
+
+		if(frame_count == 0) {
+			frame_prev = frame_current;
+		}
+
+		frame_prev_processed = pre_process(frame_prev, default_homography); 
+		absdiff(frame_prev_processed, frame_empty, frame_prev_difference); 
+
+		Mat flow = getFlow(frame_prev_difference, frame_difference);
+		threshold(flow, flow, 23, 255.0, THRESH_BINARY);
+		filter(flow);
+
+		int size = frame_processed.size().height * frame_processed.size().width; // Size of frame
+		double pixel_ratio = (double) countNonZero(frame_threshold) / size; // To get density
+		double dynamic_pixel_ratio = (double) countNonZero(flow) / size; // To get dynamic density
+
+		total_density = pixel_ratio;
+		dynamic_density = min(dynamic_pixel_ratio, pixel_ratio);
+		dynamic_density = min(dynamic_density, 0.95 * total_density);
+
+		result.push_back( { (double)frame_count, total_density, dynamic_density } );
+		
+		// print_result(result, frame_count);	
+
+		frame_count++;
+		frame_prev = frame_current;
+	}
+	return result;
+}
+
+vector<vector<double>> getDensityData(VideoCapture &cap) {
+
+	vector<vector<double>> result;
+
+	default_homography = findHomography(DEFAULT_POINTS, GIVEN_POINTS);
+
+	int frame_count = 0;
+	double total_density = 0, dynamic_density = 0;
+
+	Mat frame_old_difference;
+	Mat frame_empty = imread("Images/empty.jpg");
+	frame_empty = pre_process(frame_empty, default_homography);
+
+	while(true){
+
+		Mat frame_current, frame_processed, frame_difference, frame_threshold;
+		bool success = cap.read(frame_current);
+
+		if(success == false){
+			break;
+		}
+
+		frame_processed = pre_process(frame_current, default_homography);
+
+		absdiff(frame_processed, frame_empty, frame_difference);
+		threshold(frame_difference, frame_threshold, 40, 255.0, THRESH_BINARY);
+		filter(frame_threshold); 
+
+		if(frame_count == 0) frame_old_difference = frame_difference;
+
+		Mat flow = getFlow(frame_old_difference, frame_difference);
+		threshold(flow, flow, 23, 255.0, THRESH_BINARY);
+		filter(flow); 
+
+		int size = frame_processed.size().height * frame_processed.size().width; 
+		double pixel_ratio = (double) countNonZero(frame_threshold) / size;
+		double dynamic_pixel_ratio = (double) countNonZero(flow) / size;
+
+		total_density = pixel_ratio;
+		dynamic_density = min(dynamic_pixel_ratio, pixel_ratio);
+		dynamic_density = min(dynamic_density, 0.95 * total_density);
+		
+		result.push_back( { (double)frame_count, total_density, dynamic_density } );
+
+		// print_result(result, frame_count);	
+
+		frame_count++;
+		frame_old_difference = frame_difference;
+	}
+	return result;
+}
+
+vector<vector<double>> getDensityDataResolutionEasy(VideoCapture &cap, int X, int Y) {
+
+	Size dim(X, Y);
+
+	vector<vector<double>> result;
+
+	default_homography = findHomography(DEFAULT_POINTS, GIVEN_POINTS);
+
+	int frame_count = 0;
+	double total_density = 0, dynamic_density = 0;
+
+	Mat frame_old_difference;
+	Mat frame_empty = imread("Images/empty.jpg");
+	frame_empty = pre_process(frame_empty, default_homography);
+
+	resize(frame_empty, frame_empty, dim);
+
+	while(true){
+
+		Mat frame_current, frame_processed, frame_difference, frame_threshold;
+		bool success = cap.read(frame_current);
+
+		if(success == false){
+			break;
+		}
+
+		frame_processed = pre_process(frame_current, default_homography);
+		
+		resize(frame_processed, frame_processed, dim);
+
+		absdiff(frame_processed, frame_empty, frame_difference);
+		threshold(frame_difference, frame_threshold, 40, 255.0, THRESH_BINARY);
+		filter(frame_threshold); 
+
+		if(frame_count == 0) frame_old_difference = frame_difference;
+
+		Mat flow = getFlow(frame_old_difference, frame_difference);
+		threshold(flow, flow, 23, 255.0, THRESH_BINARY);
+		filter(flow); 
+
+		int size = frame_processed.size().height * frame_processed.size().width; 
+		double pixel_ratio = (double) countNonZero(frame_threshold) / size;
+		double dynamic_pixel_ratio = (double) countNonZero(flow) / size;
+
+		total_density = pixel_ratio;
+		dynamic_density = min(dynamic_pixel_ratio, pixel_ratio);
+		dynamic_density = min(dynamic_density, 0.95 * total_density);
+		
+		result.push_back( { (double)frame_count, total_density, dynamic_density } );
+
+		// print_result(result, frame_count);	
+
+		frame_count++;
+		frame_old_difference = frame_difference;
+	}
+	return result;
+}
+
+
+
+
+
+
+// ---------------------------------------------------------------------------------------------------------------------
+
+
+vector<Point2f> GIVEN_POINTS_RES;
+Rect RECT_CROP_RES;
+vector<Point2f> DEFAULT_POINTS_RES;
+
+vector<Point2f> scaling (const vector<Point2f> &a, double fx, double fy) {
+	vector<Point2f> b;
+	for (int i = 0; i < a.size() ; ++i) {
+		b.push_back(Point2f(round (a[i].x * fx) , round (a[i].y * fy) ) );
+	}
+	return b;
+}
+Rect getRect (const vector<Point2f> &a) {
+	Rect RECT_CROP(a[0].x, a[0].y, a[2].x - a[0].x, a[1].y - a[0].y);
+	return RECT_CROP;
+}
+
+Mat pre_process(Mat img, Mat homography, Rect RECT_CROP, bool save=false, string imageName="empty.jpg"){
+	Mat im_transform, im_crop, im_gray = grayScale(img);
+	warpPerspective(im_gray, im_transform, homography, im_gray.size());
+	im_crop = im_transform(RECT_CROP);
+	if(save){
+		imwrite("Crops/crop_" + imageName, im_crop);
+	}
+	return im_crop;
+}
+
+void print_points (vector<Point2f> &a) {
+	for (int i = 0; i < a.size() ; ++i) {
+		cout << "( " << a[i].x << ", " << a[i].y << ")" << "	";
+	}
+	cout << endl;
+}
+
+
+vector<vector<double>> getDensityDataResolution (VideoCapture &cap, int X, int Y, int original_X, int original_Y ) {
+
+	Size dim(X, Y);
+
+	double fx = (double)X / (double)original_X;
+	double fy = (double)Y / (double)original_Y;
+
+	// cout << original_X << " " << original_Y << " " << X << " " << Y << " " <<  fx << " " << fy << endl;
+
+	GIVEN_POINTS_RES = scaling(GIVEN_POINTS, fx, fy);
+	RECT_CROP_RES = getRect (GIVEN_POINTS_RES);
+	DEFAULT_POINTS_RES = scaling(DEFAULT_POINTS, fx, fy);
+
+	// print_points(GIVEN_POINTS_RES);
+	// print_points(DEFAULT_POINTS_RES);
+
+
+	vector<vector<double>> result;
+
+	default_homography = findHomography(DEFAULT_POINTS_RES, GIVEN_POINTS_RES);
+
+	int frame_count = 0;
+	double total_density = 0, dynamic_density = 0;
+
+	Mat frame_old_difference;
+	Mat frame_empty = imread("Images/empty.jpg");
+
+	resize(frame_empty, frame_empty, dim);
+
+	frame_empty = pre_process(frame_empty, default_homography, RECT_CROP_RES);
+
+
+	while(true){
+
+		Mat frame_current, frame_processed, frame_difference, frame_threshold;
+		bool success = cap.read(frame_current);
+
+		if(success == false){
+			break;
+		}
+	
+		resize(frame_current, frame_current, dim);
+
+		frame_processed = pre_process(frame_current, default_homography, RECT_CROP_RES);
+
+		absdiff(frame_processed, frame_empty, frame_difference);
+		threshold(frame_difference, frame_threshold, 40, 255.0, THRESH_BINARY);
+		filter(frame_threshold); 
+
+		if(frame_count == 0) frame_old_difference = frame_difference;
+
+		Mat flow = getFlow(frame_old_difference, frame_difference);
+		threshold(flow, flow, 23, 255.0, THRESH_BINARY);
+		filter(flow); 
+
+		int size = frame_processed.size().height * frame_processed.size().width; 
+		double pixel_ratio = (double) countNonZero(frame_threshold) / size;
+		double dynamic_pixel_ratio = (double) countNonZero(flow) / size;
+
+		total_density = pixel_ratio;
+		dynamic_density = min(dynamic_pixel_ratio, pixel_ratio);
+		dynamic_density = min(dynamic_density, 0.95 * total_density);
+		
+		result.push_back( { (double)frame_count, total_density, dynamic_density } );
+
+		// print_result(result, frame_count);	
+
+		frame_count++;
+		frame_old_difference = frame_difference;
+	}
+	return result;
 }
