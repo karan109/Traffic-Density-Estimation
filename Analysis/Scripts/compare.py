@@ -20,6 +20,8 @@ def get_info(method):
 		return ' frames'
 	if method == '2':
 		return ''
+	if method == '5':
+		return ''
 	else:
 		return ' threads'
 
