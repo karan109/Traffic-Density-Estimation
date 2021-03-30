@@ -36,3 +36,5 @@ compare:
 	$(PY) $(COMPARE) 5 $(METRIC)
 fig_clean:
 	rm ../Analysis/Outputs/**/**/*.png
+	rm ../Analysis/Outputs/**/*.png
+	rm ../Analysis/Outputs/*.png
