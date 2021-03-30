@@ -5,7 +5,7 @@ from os import walk
 import numpy as np
 import sys
 
-method = '4'
+method = '5'
 mode = 'abs'
 baseline_path = '../Outputs/baseline.txt'
 dir_path = '../Outputs/Method' + method

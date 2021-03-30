@@ -12,10 +12,10 @@ all:
 	$(CC) method3.cpp -o method3 $(CFLAGS) $(LDFLAGS)
 	$(CC) method4.cpp -o method4 $(CFLAGS) $(LDFLAGS)
 	$(CC) method5.cpp -o method5 $(CFLAGS) $(LDFLAGS)
-	$(CC) accuracy.cpp -o accuracy $(CFLAGS) $(LDFLAGS)
+	$(CC) utility.cpp -o utility $(CFLAGS) $(LDFLAGS)
 
 clean:
-	rm baseline method1 method2 method3 method4 method5 accuracy
+	rm baseline method1 method2 method3 method4 method5 utility
 	rm -f *.o
 vid_clean:
 	rm ../Data/Videos/*.mp4
