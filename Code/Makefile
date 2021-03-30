@@ -2,7 +2,9 @@ CC = g++
 CFLAGS = -lpthread -pthread -std=c++11 
 LDFLAGS = `pkg-config --cflags --libs opencv`
 PLOT = ../Analysis/Scripts/plot.py
+COMPARE = ../Analysis/Scripts/compare.py
 PY = python3
+METRIC = abs
 all:
 	$(CC) method1.cpp -o method1 $(CFLAGS) $(LDFLAGS)
 	$(CC) method2.cpp -o method2 $(CFLAGS) $(LDFLAGS)
@@ -21,3 +23,12 @@ compress:
 	tar cvzf ../../2019CS10699_2019CS50446_ass1_part3.tar.gz ../
 plot:
 	$(PY) $(PLOT)
+	$(PY) $(PLOT) 1
+	$(PY) $(PLOT) 2
+	$(PY) $(PLOT) 3
+	$(PY) $(PLOT) 4
+compare:
+	$(PY) $(COMPARE) 1 $(METRIC)
+	$(PY) $(COMPARE) 2 $(METRIC)
+	$(PY) $(COMPARE) 3 $(METRIC)
+	$(PY) $(COMPARE) 4 $(METRIC)

@@ -308,7 +308,7 @@ vector<vector<double>> getDensityDataTemporal(VideoCapture &cap, Mat &frame_empt
 vector<vector<double>> getDensityDataSparse(string file_name, Mat &frame_empty, int step = 1){
 	
 	VideoCapture cap;
-	cap.open("Videos/"+file_name); // Open video file
+	cap.open("../Data/Videos/"+file_name); // Open video file
 
 	// if not success, exit program
     if (cap.isOpened() == false) {
