@@ -32,3 +32,5 @@ compare:
 	$(PY) $(COMPARE) 2 $(METRIC)
 	$(PY) $(COMPARE) 3 $(METRIC)
 	$(PY) $(COMPARE) 4 $(METRIC)
+fig_clean:
+	rm ../Analysis/Outputs/**/**/*.png

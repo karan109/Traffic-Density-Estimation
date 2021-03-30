@@ -73,3 +73,15 @@ plt.ylabel('Utility')
 plt.xlabel('Run Time (in seconds)')
 plt.legend()
 plt.savefig(dir_path+'/Dynamic_Density.png')
+
+plt.figure()
+
+# Average
+colors = iter(cm.rainbow(np.linspace(0, 1, len(stats))))
+for i in range(len(stats)):
+	plt.scatter([stats[i, 2]], [np.round((stats[i, 1]+stats[i, 0])/2, 2)], color=next(colors), label=labels[i])
+plt.title('Average Utility Comparison (Method ' + method + ')')
+plt.ylabel('Utility')
+plt.xlabel('Run Time (in seconds)')
+plt.legend()
+plt.savefig(dir_path+'/Average.png')
