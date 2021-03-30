@@ -1,7 +1,7 @@
 CC = g++
 CFLAGS = -lpthread -pthread -std=c++11 
 LDFLAGS = `pkg-config --cflags --libs opencv`
-PLOT = ../Analysis/Plotting_script/plot.py
+PLOT = ../Analysis/Scripts/plot.py
 PY = python3
 all:
 	$(CC) method1.cpp -o method1 $(CFLAGS) $(LDFLAGS)

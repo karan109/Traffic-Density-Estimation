@@ -387,7 +387,7 @@ vector<vector<double>> getDensityDataSparse(string file_name, Mat &frame_empty, 
 
 
 // Given a baseline, this calculates the accuracy of Queue density and Dynamic density for a result
-pair<double, double> getAccuracy(vector<vector<double>> actual, vector<vector<double>> baseline, string metric = "square"){
+pair<double, double> getAccuracy(vector<vector<double>> actual, vector<vector<double>> baseline, string metric = "rms"){
 	
 	// The metric can be average absolute error or average square error
 
@@ -407,7 +407,10 @@ pair<double, double> getAccuracy(vector<vector<double>> actual, vector<vector<do
 	}
 	result.first /= baseline.size();
 	result.second /= baseline.size();
-	
+	if(metric == "rms"){
+		result.first = sqrt(result.first);
+		result.second = sqrt(result.second);
+	}
 	// Return a pair of accuracies of Queue and Dynamic Densities
 	return {(double)round(10000*(1-tanh(result.first)))/100, (double)round(10000*(1-tanh(result.second)))/100};
 }

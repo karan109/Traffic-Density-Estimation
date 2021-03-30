@@ -1,6 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-df = pd.read_csv('../Outputs/Method2/1600x900.txt')
+df = pd.read_csv('../Outputs/baseline.txt')
 y1 = list(df['Queue_Density'])
 y2 = list(df['Dynamic_Density'])
 x = list(df['Frame_Num'])
@@ -11,5 +11,6 @@ plt.plot(x, y2, label='Dynamic Density')
 plt.ylabel('Density')
 plt.xlabel('Time (in seconds)')
 plt.legend()
-plt.savefig('../Outputs/user_graph.png')
+plt.title('Baseline')
+plt.savefig('../Outputs/baseline.png')
 plt.show()
