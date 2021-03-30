@@ -1,6 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-df = pd.read_csv('../Outputs/baseline.txt')
+df = pd.read_csv('../Outputs/Method2/1600x900.txt')
 y1 = list(df['Queue_Density'])
 y2 = list(df['Dynamic_Density'])
 x = list(df['Frame_Num'])

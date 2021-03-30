@@ -1,1 +1,0 @@
-All transformed images are saved here.

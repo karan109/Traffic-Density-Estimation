@@ -16,7 +16,7 @@ int main(int argc, char* argv[]){
 // Function to get baseline result
 void bonus(string file_name){
 
-    Mat empty = imread("Images/empty.jpg"); // Open background image
+    Mat empty = imread("../Data/Images/empty.jpg"); // Open background image
 
     auto start = high_resolution_clock::now(); // Start clock to get run-time
 
@@ -29,7 +29,7 @@ void bonus(string file_name){
 
 
     // Output result to a file
-    string output_file = "Outputs/bonus.txt";
+    string output_file = "../Analysis/Outputs/bonus_test.txt";
     fstream f(output_file, ios::out);
     f << "Frame_Num,Queue_Density,Dynamic_Density" << endl;
     cout << "Frame_Num,Queue_Density,Dynamic_Density" << endl;

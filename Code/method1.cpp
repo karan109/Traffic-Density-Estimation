@@ -25,12 +25,12 @@ int main(int argc, char* argv[]){
 void method1 () {
 
 	VideoCapture cap;
-	cap.open("Videos/"+file_name); // Capture video
+	cap.open("../Data/Videos/"+file_name); // Capture video
 
 	// if not success, exit program
 	if (cap.isOpened() == false) {
 		cout << "Cannot open the video file. Please provide a valid name (refer to README.md)." << endl;
-        exit(1);
+        exit(3);
 	}
 
 	auto start = high_resolution_clock::now(); // Start clock to get run-time
@@ -45,7 +45,7 @@ void method1 () {
 
 
 	// Output file
-	output_file = "Outputs/Method1/"+to_string(X)+".txt";
+	output_file = "../Analysis/Outputs/Method1/"+to_string(X)+"_test.txt";
 
     fstream f(output_file, ios::out);
     

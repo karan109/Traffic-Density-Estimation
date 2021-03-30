@@ -38,8 +38,8 @@ int main(int argc, char* argv[]){
         cout << "Incorrect number of arguments (refer to README.md)." << endl;
         return 0;
     }
-    if(!isint(argv[2])){
-        cout << "Number of threads given is not an integer (refer to README.md)." << endl;
+    if(!isint(argv[2]) or stoi(argv[2]) <= 0){
+        cout << "Number of threads given is not a valid integer (refer to README.md)." << endl;
         return 0;
     }
     THREADS = stoi(argv[2]);
@@ -63,14 +63,14 @@ void method4(string file_name){
 
     // Evaluate each thread
     for (int i = 0; i < THREADS; i++){
-        data[i].cap.open("Videos/"+file_name);
+        data[i].cap.open("../Data/Videos/"+file_name);
 
         if (data[i].cap.isOpened() == false){
             cout << "Cannot open the video file. Please provide a valid name (refer to README.md)." << endl;
             exit(3);
         }
 
-        data[i].empty = imread("Images/empty.jpg");
+        data[i].empty = imread("../Data/Images/empty.jpg");
         data[i].part = i+1;
         pthread_create( & threads[i], NULL, temporal, (void * ) & data[i]);
     }
@@ -94,13 +94,12 @@ void method4(string file_name){
     
     cout << "Frame_Num,Queue_Density,Dynamic_Density" << endl;
 
-    string output_file = "Outputs/Method4/"+to_string(THREADS)+"_test.txt";
+    string output_file = "../Analysis/Outputs/Method4/"+to_string(THREADS)+"_test.txt";
     fstream f(output_file, ios::out);
     f << "Frame_Num,Queue_Density,Dynamic_Density" << endl;
 
     // Output result to a file
     for(int i=0;i<final_result.size();i++){
-        // cout << final_result[i][0] << "," << final_result[i][1] << "," << final_result[i][2] << endl;
         f << final_result[i][0] << "," << final_result[i][1] << "," << final_result[i][2] << endl;
     }
 

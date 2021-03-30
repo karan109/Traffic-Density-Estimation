@@ -44,9 +44,6 @@ Mat pre_process(Mat img, Mat homography, bool save=false, string imageName="empt
 	Mat im_transform, im_crop, im_gray = grayScale(img);
 	warpPerspective(im_gray, im_transform, homography, im_gray.size());
 	im_crop = im_transform(RECT_CROP);
-	if(save){
-		imwrite("Crops/crop_" + imageName, im_crop);
-	}
 	return im_crop;
 }
 
@@ -54,9 +51,6 @@ Mat pre_process_(Mat img, Mat homography, bool save=false, string imageName="emp
 	Mat im_transform, im_crop;
 	warpPerspective(img, im_transform, homography, img.size());
 	im_crop = im_transform(RECT_CROP);
-	if(save){
-		imwrite("Crops/crop_" + imageName, im_crop);
-	}
 	return im_crop;
 }
 
@@ -316,6 +310,12 @@ vector<vector<double>> getDensityDataSparse(string file_name, Mat &frame_empty, 
 	VideoCapture cap;
 	cap.open("Videos/"+file_name); // Open video file
 
+	// if not success, exit program
+    if (cap.isOpened() == false) {
+        cout << "Cannot open the video file. Please provide a valid name (refer to README.md)." << endl;
+        exit(3);
+    }
+
 	default_homography = findHomography(DEFAULT_POINTS, GIVEN_POINTS);
 
 	vector<vector<double>> result; // Vector to store the result
@@ -415,7 +415,7 @@ pair<double, double> getAccuracy(vector<vector<double>> actual, vector<vector<do
 // Loads a result file (with frame data) into a vector for processing
 vector<vector<double>> load_file(string file_name = "baseline.txt"){
 
-	fstream f("Outputs/"+file_name);
+	fstream f("../Analysis/Outputs/"+file_name);
 	vector<vector<double>> result;
 	string line, val;
 	getline(f, line);
@@ -482,7 +482,7 @@ vector<vector<double>> getDensityDataSkips (VideoCapture &cap, int X = 1) {
 	vector<vector<double>> result;
 
 	default_homography = findHomography(DEFAULT_POINTS, GIVEN_POINTS); 
-	Mat frame_empty = imread("Images/empty.jpg");
+	Mat frame_empty = imread("../Data/Images/empty.jpg");
 	frame_empty = pre_process(frame_empty, default_homography);
 	Mat frame_prev;
 	int frame_count = 0;
@@ -555,7 +555,7 @@ vector<vector<double>> getDensityData(VideoCapture &cap) {
 	double total_density = 0, dynamic_density = 0;
 
 	Mat frame_old_difference;
-	Mat frame_empty = imread("Images/empty.jpg");
+	Mat frame_empty = imread("../Data/Images/empty.jpg");
 	frame_empty = pre_process(frame_empty, default_homography);
 
 	while(true){
@@ -609,7 +609,7 @@ vector<vector<double>> getDensityDataResolutionEasy(VideoCapture &cap, int X, in
 	double total_density = 0, dynamic_density = 0;
 
 	Mat frame_old_difference;
-	Mat frame_empty = imread("Images/empty.jpg");
+	Mat frame_empty = imread("../Data/Images/empty.jpg");
 	frame_empty = pre_process(frame_empty, default_homography);
 
 	resize(frame_empty, frame_empty, dim);
@@ -683,9 +683,6 @@ Mat pre_process(Mat img, Mat homography, Rect RECT_CROP, bool save=false, string
 	Mat im_transform, im_crop, im_gray = grayScale(img);
 	warpPerspective(im_gray, im_transform, homography, im_gray.size());
 	im_crop = im_transform(RECT_CROP);
-	if(save){
-		imwrite("Crops/crop_" + imageName, im_crop);
-	}
 	return im_crop;
 }
 
@@ -722,7 +719,7 @@ vector<vector<double>> getDensityDataResolution (VideoCapture &cap, int X, int Y
 	double total_density = 0, dynamic_density = 0;
 
 	Mat frame_old_difference;
-	Mat frame_empty = imread("Images/empty.jpg");
+	Mat frame_empty = imread("../Data/Images/empty.jpg");
 
 	resize(frame_empty, frame_empty, dim);
 

@@ -18,8 +18,15 @@ void baseline(string file_name){
 
     VideoCapture cap;
 
-    cap.open("Videos/"+file_name); // Open video file
-    Mat empty = imread("Images/empty.jpg"); // Open background image
+    cap.open("../Data/Videos/"+file_name); // Open video file
+
+    // if not success, exit program
+    if (cap.isOpened() == false) {
+        cout << "Cannot open the video file. Please provide a valid name (refer to README.md)." << endl;
+        exit(3);
+    }
+
+    Mat empty = imread("../Data/Images/empty.jpg"); // Open background image
 
     auto start = high_resolution_clock::now(); // Start clock to get run-time
 
@@ -33,7 +40,7 @@ void baseline(string file_name){
 
 
     // Output result to a file
-    string output_file = "Outputs/baseline_test.txt";
+    string output_file = "../Analysis/Outputs/baseline_test.txt";
     fstream f(output_file, ios::out);
     f << "Frame_Num,Queue_Density,Dynamic_Density" << endl;
 

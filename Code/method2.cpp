@@ -16,7 +16,13 @@ int main(int argc, char* argv[]){
     if (argc >= 2) file_name = argv[1];
 
     VideoCapture getres;
-    getres.open("Videos/"+file_name);
+    getres.open("../Data/Videos/"+file_name);
+
+    if (getres.isOpened() == false){
+        cout << "Cannot open the video file. Please provide a valid name (refer to README.md)." << endl;
+        exit(3);
+    }
+
     Mat temp;
     getres.read(temp);
     original_Y = temp.rows;
@@ -47,12 +53,12 @@ int main(int argc, char* argv[]){
 void method2 () {
 
     VideoCapture cap;
-    cap.open("Videos/"+file_name); // Capture video
+    cap.open("../Data/Videos/"+file_name); // Capture video
 
     // if not success, exit program
     if (cap.isOpened() == false) {
         cout << "Cannot open the video file. Please provide a valid name (refer to README.md)." << endl;
-        exit(1);
+        exit(3);
     }
 
     auto start = high_resolution_clock::now(); // Start clock to get run-time
@@ -69,7 +75,7 @@ void method2 () {
 
 
     // Output file
-    output_file = "Outputs/Method2/"+to_string(X)+ "x" + to_string(Y) + ".txt";
+    output_file = "../Analysis/Outputs/Method2/"+to_string(X)+ "x" + to_string(Y) + "_test.txt";
     fstream f(output_file, ios::out);
 
     f << "Frame_Num,Queue_Density,Dynamic_Density" << endl;
