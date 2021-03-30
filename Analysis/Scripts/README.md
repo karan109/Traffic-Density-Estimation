@@ -1,4 +1,4 @@
-A Python plotting script to plot the file stored in Outputs/user_out.txt
+Plotting scripts are stored here.
 ## Install dependencies
 ```bash
 pip install -r requirements.txt
