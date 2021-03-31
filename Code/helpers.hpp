@@ -201,44 +201,44 @@ Mat getSparseFlow(Mat & frame_old_difference, Mat & frame_difference, Mat & temp
 	Mat img;
 
 	// Create random colors
-	vector<Scalar> colors;
-    RNG rng;
-    for(int i = 0; i < 100; i++)
+	vector<Scalar> colors_rand;
+    RNG wheel;
+    for(int i = 0; i < 200; i++)
     {
-        int r = rng.uniform(0, 256);
-        int g = rng.uniform(0, 256);
-        int b = rng.uniform(0, 256);
-        colors.push_back(Scalar(r,g,b));
+        int red = wheel.uniform(0, 256);
+        int green = wheel.uniform(0, 256);
+        int blue = wheel.uniform(0, 256);
+        colors_rand.push_back(Scalar(red ,green ,blue));
     }
 
-    vector<Point2f> p0, p1;
+    vector<Point2f> point0, point1;
 
     // find points of interest
-    goodFeaturesToTrack(frame_difference, p0, 100, 0.3, 7, Mat(), 7, false, 0.04);
+    goodFeaturesToTrack(frame_difference, point0, 100, 0.3, 7, Mat(), 7, false, 0.04);
     // in case there are no interesting points
-    if (p0.size() == 0) return grayScale(temp);
+    if (point0.size() == 0) return grayScale(temp);
 
     // Create a mask image for drawing purposes
-	Mat mask = Mat::zeros(temp.size(), temp.type());
+	Mat mask_img = Mat::zeros(temp.size(), temp.type());
 
 	// Calculate optical flow
-	vector<uchar> status;
-    vector<float> err;
-    TermCriteria criteria = TermCriteria((TermCriteria::COUNT) + (TermCriteria::EPS), 10, 0.03);
-    calcOpticalFlowPyrLK(frame_old_difference, frame_difference, p0, p1, status, err, Size(15,15), 2, criteria);
-    vector<Point2f> good_new;
+	vector<uchar> ok;
+    vector<float> bug;
+    TermCriteria c = TermCriteria((TermCriteria::COUNT) + (TermCriteria::EPS), 10, 0.03);
+    calcOpticalFlowPyrLK(frame_old_difference, frame_difference, point0, point1, ok, bug, Size(15,15), 2, c);
+    vector<Point2f> points_select;
 
-    for(uint i = 0; i < p0.size(); i++) {
+    for(uint i = 0; i < point0.size(); i++) {
         // Select good points
-        if(status[i] == 1) {
-            good_new.push_back(p1[i]);
-            // draw the tracks
-            line(mask,p1[i], p0[i], colors[i], 2);
-            circle(temp, p1[i], 5, colors[i], -1);
+        if(ok[i] == 1) {
+            points_select.push_back(point1[i]);
+            // draw on image
+            line(mask_img,point1[i], point0[i], colors_rand[i], 2);
+            circle(temp, point1[i], 5, colors_rand[i], -1);
         }
     }
     
-    add(temp, mask, img);
+    add(temp, mask_img, img);
     img = grayScale(img);
     return img;
 }
