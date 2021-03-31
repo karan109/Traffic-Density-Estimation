@@ -44,15 +44,17 @@ for path in paths:
 	result, runtime = load(path)
 	if(mode == 'abs'):
 		accuracy = np.mean(np.abs(baseline-result), 0)
+		std = np.round(np.std(np.abs(baseline-result), 0)[1], 2)
 	else:
 		accuracy = np.sqrt(np.mean(np.square(baseline-result), 0))
+		std = np.round(np.sqrt(np.std(np.square(baseline-result), 0))[1], 2)
 	accuracy = np.round(100*(1-(accuracy)), 2)
-	stats.append([accuracy[0], accuracy[1], np.round((accuracy[0]+accuracy[1])/2, 2), int(runtime)])
+	stats.append([accuracy[0], accuracy[1], std, np.round((accuracy[0]+accuracy[1])/2, 2), int(runtime)])
 
 
 stats = np.array(stats)
 table = list(zip(labels, stats.tolist()))
 table = [[a]+b for (a, b) in table]
 # table = [] + table
-df = pd.DataFrame(table, columns = ['Parameters', 'Queue Utility', 'Dynamic Utility', 'Average Utility', 'Run Time (s)'])
+df = pd.DataFrame(table, columns = ['Parameters', 'Queue Utility', 'Dynamic Utility', 'Dynamic Std', 'Average Utility', 'Run Time (s)'])
 print(df.to_latex(index=False))
